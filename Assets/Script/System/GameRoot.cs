@@ -6,28 +6,97 @@ public class GameRoot : MonoBehaviour {
     public GameObject square;
     public GameObject piece;
 
+    private Square[] squares;
+
+    private GameObject selectedPiece;
+    private List<int> selectedSquareIDs;
+
     // Use this for initialization
     void Start () {
         MakeSquares();
         MakePieces();
-	}
+        selectedSquareIDs = new List<int>();
+
+    }
 	
 	// Update is called once per frame
 	void Update () {
 		
 	}
 
+    public void OnPieceClick(GameObject piece)
+    {
+        Piece pi = piece.GetComponent<Piece>();
+        if (selectedPiece != null)
+        {
+            Piece p = selectedPiece.GetComponent<Piece>();
+            // 選択済のPieceをクリックしても何もしない
+            if (p.id == pi.id)
+            {
+                return;
+            }
+            p.setOwnMaterial();
+        }
+        
+        var nextIDs = Util.nextIDs(pi.id);
+
+
+        // 前回の隣接していたマスを選択不可能にする
+        foreach (int id in selectedSquareIDs)
+        {
+            squares[id].ToUnselectable();
+        }
+
+        // 隣接したマスに選択可能にする
+        foreach (int id in nextIDs)
+        {
+            squares[id].ToSelectable();
+        }
+
+        selectedSquareIDs = nextIDs;
+        selectedPiece = piece;
+    }
+
+    public void OnSquareClick(GameObject square)
+    {
+        Piece p = selectedPiece.GetComponent<Piece>();
+        Square s = square.GetComponent<Square>();
+
+        //移動前のPieceの場所の高さを1つ下げる
+        squares[p.id].downHeight();
+
+        p.MoveToID(s.id, s.height);
+
+        // 選択済のPieceを選択解除
+        selectedPiece = null;
+        p.setOwnMaterial();
+
+        // 前回の隣接していたマスを選択不可能にする
+        foreach (int id in selectedSquareIDs)
+        {
+            squares[id].ToUnselectable();
+        }
+    }
+
     // マス目を生成
     private void MakeSquares()
     {
-        GameObject squares = new GameObject("Squares");
+        GameObject enptySquares = new GameObject("Squares");
+        squares = new Square[25];
         for (int i=0; i<25; i++)
         {
             GameObject go = Instantiate(square, Util.Id2Pos(i), Quaternion.identity) as GameObject;
             go.name = ""+i;
-            go.transform.parent = squares.transform;
+            go.SetActive(false);
+            go.transform.parent = enptySquares.transform;
             Square sq = go.GetComponent<Square>();
             sq.Create(i);
+            squares[i] = sq;
+            // 初期配置は最初から高さ+1
+            if (i <= 4 || 20 <= i)
+            {
+                sq.upHeight();
+            }
         }
     }
 

@@ -110,6 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   whiteMaterial: {fileID: 2100000, guid: 41814042a450b814ebdff7c655cd88a0, type: 2}
   blackMaterial: {fileID: 2100000, guid: 141815f872b9cdd41a0d1c62e8082967, type: 2}
+  ChoicingMaterial: {fileID: 2100000, guid: 268bc9297bde1114cb67589402e3f4fa, type: 2}
 --- !u!114 &114223921864749516
 MonoBehaviour:
   m_ObjectHideFlags: 1
