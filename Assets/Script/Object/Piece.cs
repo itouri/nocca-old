@@ -10,6 +10,8 @@ public class Piece : MonoBehaviour {
 
     [System.NonSerialized]
     public int id;
+    [System.NonSerialized]
+    public int height;
 
     private Util.PEACE_COLOR color;
     private bool isMovable;
@@ -26,6 +28,7 @@ public class Piece : MonoBehaviour {
     // Use this for initialization
     void Start() {
         gameRoot = GameObject.Find("GameRoot");
+        this.isMovable = true;
     }
 
     // Update is called once per frame
@@ -33,9 +36,15 @@ public class Piece : MonoBehaviour {
 
     }
 
+    public void setMovable (bool isMovable)
+    {
+        this.isMovable = isMovable;
+    }
+
     public void MoveToID(int id, int height)
     {
         this.id = id;
+        this.height = height;
         var vec = Util.Id2Pos(id);
         vec.y = 1.0f * height;
         transform.position = vec;
@@ -44,9 +53,12 @@ public class Piece : MonoBehaviour {
 
     public void OnClick(BaseEventData data)
     {
-        this.GetComponent<Renderer>().material = ChoicingMaterial;
-        this.gameObject.tag = "chocing";
-        gameRoot.SendMessage("OnPieceClick", this.gameObject);
+        if (isMovable)
+        {
+            this.GetComponent<Renderer>().material = ChoicingMaterial;
+            this.gameObject.tag = "chocing";
+            gameRoot.SendMessage("OnPieceClick", this.gameObject);
+        }
     }
 
     public void setOwnMaterial()

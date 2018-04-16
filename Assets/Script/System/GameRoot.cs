@@ -7,6 +7,7 @@ public class GameRoot : MonoBehaviour {
     public GameObject piece;
 
     private Square[] squares;
+    private Piece[] pieces;
 
     private GameObject selectedPiece;
     private List<int> selectedSquareIDs;
@@ -62,10 +63,30 @@ public class GameRoot : MonoBehaviour {
         Piece p = selectedPiece.GetComponent<Piece>();
         Square s = square.GetComponent<Square>();
 
-        //移動前のPieceの場所の高さを1つ下げる
+        //移動元のSquareの場所の高さを1つ下げる
         squares[p.id].downHeight();
 
+        // 動けなくなるPieceの確認
+        foreach (Piece piece in pieces)
+        {
+            if (piece.id == p.id || piece.id == s.id)
+            {
+                bool movable = (piece.height == s.height);
+                piece.setMovable(movable);
+            }
+        }
+
         p.MoveToID(s.id, s.height);
+
+        // 動けなくなるPieceの確認
+        foreach (Piece piece in pieces)
+        {
+            if (piece.id == p.id || piece.id == s.id)
+            {
+                bool movable = (piece.height == s.height);
+                piece.setMovable(movable);
+            }
+        }
 
         // 選択済のPieceを選択解除
         selectedPiece = null;
@@ -103,17 +124,20 @@ public class GameRoot : MonoBehaviour {
     // コマを生成
     private void MakePieces()
     {
-        GameObject pieces = new GameObject("Pieces");
+        GameObject enptyPieces = new GameObject("Pieces");
+        pieces = new Piece[10];
         for (int i = 0; i < 5; i++)
         {
             GameObject gW = Instantiate(piece, Util.Id2Pos(i, 0), Quaternion.identity) as GameObject;
             GameObject gB = Instantiate(piece, Util.Id2Pos(i, 4), Quaternion.identity) as GameObject;
-            gW.transform.parent = pieces.transform;
-            gB.transform.parent = pieces.transform;
+            gW.transform.parent = enptyPieces.transform;
+            gB.transform.parent = enptyPieces.transform;
             Piece pW = gW.GetComponent<Piece>();
             Piece pB = gB.GetComponent<Piece>();
             pW.Create(Util.PEACE_COLOR.WHITE, i);
             pB.Create(Util.PEACE_COLOR.BLACK, i+20);
+            pieces[i*2] = pW;
+            pieces[i*2+1] = pB;
         }
     }
 }

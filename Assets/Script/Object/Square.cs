@@ -60,7 +60,7 @@ public class Square : MonoBehaviour
 
     public void downHeight()
     {
-        // マスがクリックされたときheightを+1する
+        // マスがクリックされたときheightを-1する
         Vector3 pos = transform.position;
         height--;
         transform.position = new Vector3(pos.x, height * 1.0f - 0.5f, pos.z);
