@@ -12,13 +12,13 @@ public class Piece : MonoBehaviour {
     public int id;
     [System.NonSerialized]
     public int height;
-
-    private Util.PEACE_COLOR color;
+    [System.NonSerialized]
+    public Util.PIECE_COLOR color;
     private bool isMovable;
 
     private GameObject gameRoot;
 
-    public void Create(Util.PEACE_COLOR color, int id)
+    public void Create(Util.PIECE_COLOR color, int id)
     {
         this.color = color;
         this.id = id;
@@ -55,14 +55,19 @@ public class Piece : MonoBehaviour {
     {
         if (isMovable)
         {
-            this.GetComponent<Renderer>().material = ChoicingMaterial;
-            this.gameObject.tag = "chocing";
             gameRoot.SendMessage("OnPieceClick", this.gameObject);
         }
     }
 
     public void setOwnMaterial()
     {
-        this.GetComponent<Renderer>().material = (color == Util.PEACE_COLOR.WHITE) ? whiteMaterial : blackMaterial;
+        this.GetComponent<Renderer>().material = (color == Util.PIECE_COLOR.WHITE) ? whiteMaterial : blackMaterial;
     }
+
+    public void SetChoicing()
+    {
+        this.GetComponent<Renderer>().material = ChoicingMaterial;
+        this.gameObject.tag = "chocing";
+    }
+
 }

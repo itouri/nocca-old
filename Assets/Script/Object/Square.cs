@@ -47,7 +47,6 @@ public class Square : MonoBehaviour
     public void OnClick(BaseEventData data)
     {
         gameRoot.SendMessage("OnSquareClick", this.gameObject);
-        upHeight();
     }
 
     public void upHeight()

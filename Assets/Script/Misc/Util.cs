@@ -3,10 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+
+// TODO 適切なところへ移動
+public enum State
+{
+    GAME = 1,
+    FINISH,
+    END,
+}
+
 static public class Util{
     // マス目をIDからポジションに変換
     static public Vector3 Id2Pos (int id)
     {
+        if ( id == 25 )
+        {
+            return new Vector3(0, -0.5f, -4.5f);
+        }
+        if ( id == 26 )
+        {
+            return new Vector3(0, -0.5f, 4.5f);
+        }
         float margin = 0.3F;
         float pieceSize = 1.0F;
         float x = (id % 5 - 2) * (pieceSize + margin);
@@ -24,7 +41,7 @@ static public class Util{
 
     //TODO 汚い
     // 引数のidと隣接したidを返す
-    static public List<int> nextIDs(int id)
+    static public List<int> NextIDs(int id, PIECE_COLOR turn)
     {
         var list = new List<int>();
         for (int i=0; i < 3; i++)
@@ -50,20 +67,27 @@ static public class Util{
             list.Remove(id - 6);
             list.Remove(id - 5);
             list.Remove(id - 4);
+            if (turn == PIECE_COLOR.BLACK)
+            {
+                list.Add(25);
+            }
         }
         if (20 <= id && id <= 24) //right
         {
             list.Remove(id + 4);
             list.Remove(id + 5);
             list.Remove(id + 6);
+            if ( turn == PIECE_COLOR.WHITE)
+            {
+                list.Add(26);
+            }
         }
         return list;
     }
 
-    public enum PEACE_COLOR
+    public enum PIECE_COLOR
     {
-        WHITE = 0,
-        BLACK,
-        END,
+        WHITE = -1,
+        BLACK = 1,
     }
 }

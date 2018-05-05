@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CameraControl : MonoBehaviour {
     public GameObject camera;
+    public float verticalSensitivity;
+    public float horizontalSensitivity;
 
     private Vector3 defaultPosition;
     private Quaternion defaultAngle;
@@ -26,12 +28,14 @@ public class CameraControl : MonoBehaviour {
         }
         else if (Input.GetMouseButton(0))
         {
-            // マウスの移動量分カメラを回転させる.
-            newAngle.y -= (Input.mousePosition.x - lastMousePosition.x) * 0.1f;
-            newAngle.z -= (Input.mousePosition.y - lastMousePosition.y) * -0.1f;
-            camera.transform.localEulerAngles = newAngle;
-
-            lastMousePosition = Input.mousePosition;
+            //TODO このコードの理解
+            // マウスの移動量
+            float mouseInputX = Input.GetAxis("Mouse X");
+            float mouseInputY = Input.GetAxis("Mouse Y");
+            // targetの位置のY軸を中心に、回転（公転）する
+            transform.RotateAround(Vector3.zero, Vector3.up, mouseInputX * Time.deltaTime * horizontalSensitivity);
+            // カメラの垂直移動（※角度制限なし、必要が無ければコメントアウト）
+            transform.RotateAround(Vector3.zero, transform.right, mouseInputY * Time.deltaTime * verticalSensitivity);
         }
         if (Input.GetMouseButtonUp(1))
         {
