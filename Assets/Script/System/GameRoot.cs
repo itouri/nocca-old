@@ -1,7 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+
+public class GameState
+{
+    public Util.PIECE_COLOR turn;
+    public Piece[] pieces;
+
+    //TODO　何このthis
+    public GameState (Util.PIECE_COLOR turn, Piece[] pieces)
+    {
+        this.turn = turn;
+        this.pieces = pieces;
+    }
+}
 
 public class GameRoot : MonoBehaviour {
     public GameObject square;
@@ -13,6 +27,8 @@ public class GameRoot : MonoBehaviour {
     public Button buttonCameraResetWhite;
     public Button buttonDeselectBlack;
     public Button buttonDeselectWhite;
+    public Button buttonUndoBlack;
+    public Button buttonUndoWhite;
 
     public Button buttonOneMore;
 
@@ -23,21 +39,24 @@ public class GameRoot : MonoBehaviour {
     private List<int> selectedSquareIDs;
 
     private State state;
+    private Stack<GameState> gameStates;
     private Util.PIECE_COLOR turn;
 
     private GameObject enptySquares;
     private GameObject enptyPieces;
 
     // Use this for initialization
-    void Start () {
+    void Start() {
         selectedSquareIDs = new List<int>();
         enptySquares = new GameObject("Squares");
         enptyPieces = new GameObject("Pieces");
+
         init(true);
     }
 
     public void OnPieceClick(GameObject piece)
     {
+
         Piece pi = piece.GetComponent<Piece>();
 
         //　現在のターンと違う色のクリックは受け付けない
@@ -56,7 +75,7 @@ public class GameRoot : MonoBehaviour {
             }
             p.setOwnMaterial();
         }
-        
+
         var nextIDs = Util.NextIDs(pi.id, turn);
 
 
@@ -83,6 +102,8 @@ public class GameRoot : MonoBehaviour {
     {
         Piece p = selectedPiece.GetComponent<Piece>();
         Square s = square.GetComponent<Square>();
+
+        Do();
 
         //移動元のSquareの場所の高さを1つ下げる
         squares[p.id].downHeight();
@@ -118,7 +139,7 @@ public class GameRoot : MonoBehaviour {
         if (s.id == 25 || s.id == 26)
         {
             state = State.FINISH;
-            string text = "You Win!";
+            string text = "Win!";
 
             if (this.turn == Util.PIECE_COLOR.WHITE)
             {
@@ -133,10 +154,11 @@ public class GameRoot : MonoBehaviour {
             return;
         }
 
-        // 効果音を鳴らす
-        SoundManager.GetInstance().PlaySE(Sound.ID.PUTTING_PIECE);
         turn = (Util.PIECE_COLOR)((int)turn * -1);
         switchTurnUI();
+
+        // 効果音を鳴らす
+        SoundManager.GetInstance().PlaySE(Sound.ID.PUTTING_PIECE);
     }
 
     public void OnClickOneMore()
@@ -147,6 +169,7 @@ public class GameRoot : MonoBehaviour {
 
     private void init(bool isFirst)
     {
+        gameStates = new Stack<GameState>();
         //TODO 繰り返しが多い
         MakeSquares(isFirst);
         MakePieces(isFirst);
@@ -167,10 +190,10 @@ public class GameRoot : MonoBehaviour {
             GameObject.Destroy(s.gameObject);
         }
         squares = new Square[27];
-        for (int i=0; i<25; i++)
+        for (int i = 0; i < 25; i++)
         {
             GameObject go = Instantiate(square, Util.Id2Pos(i), Quaternion.identity) as GameObject;
-            go.name = ""+i;
+            go.name = "" + i;
             go.SetActive(false);
             go.transform.parent = enptySquares.transform;
             Square sq = go.GetComponent<Square>();
@@ -189,7 +212,7 @@ public class GameRoot : MonoBehaviour {
         // 25,26に特別なマスを追加
         for (int i = 25; i < 27; i++)
         {
-            GameObject go = Instantiate(square, poses[i-25], Quaternion.identity) as GameObject;
+            GameObject go = Instantiate(square, poses[i - 25], Quaternion.identity) as GameObject;
             go.name = "" + i;
             go.SetActive(false);
             go.transform.parent = enptySquares.transform;
@@ -223,9 +246,9 @@ public class GameRoot : MonoBehaviour {
             Piece pW = gW.GetComponent<Piece>();
             Piece pB = gB.GetComponent<Piece>();
             pW.Create(Util.PIECE_COLOR.WHITE, i);
-            pB.Create(Util.PIECE_COLOR.BLACK, i+20);
-            pieces[i*2] = pW;
-            pieces[i*2+1] = pB;
+            pB.Create(Util.PIECE_COLOR.BLACK, i + 20);
+            pieces[i * 2] = pW;
+            pieces[i * 2 + 1] = pB;
         }
     }
 
@@ -237,19 +260,27 @@ public class GameRoot : MonoBehaviour {
             this.textYouWhite.enabled = true;
             this.buttonCameraResetWhite.gameObject.SetActive(true);
             this.buttonDeselectWhite.gameObject.SetActive(true);
+            this.buttonUndoWhite.gameObject.SetActive(false);
 
             this.textYouBlack.enabled = false;
             this.buttonCameraResetBlack.gameObject.SetActive(false);
             this.buttonDeselectBlack.gameObject.SetActive(false);
+            if (gameStates.Count != 0)
+            {
+                this.buttonUndoBlack.gameObject.SetActive(true);
+            }
         } else
         {
             this.textYouWhite.enabled = false;
             this.buttonCameraResetWhite.gameObject.SetActive(false);
             this.buttonDeselectWhite.gameObject.SetActive(false);
+            this.buttonUndoWhite.gameObject.SetActive(true);
 
             this.textYouBlack.enabled = true;
             this.buttonCameraResetBlack.gameObject.SetActive(true);
             this.buttonDeselectBlack.gameObject.SetActive(true);
+            this.buttonUndoBlack.gameObject.SetActive(false);
+
         }
     }
 
@@ -280,5 +311,42 @@ public class GameRoot : MonoBehaviour {
             GameRoot.instance = GameObject.Find("GameRoot").GetComponent<GameRoot>();
         }
         return (GameRoot.instance);
+    }
+
+    public void Undo()
+    {
+        if (gameStates.Count == 0)
+        {
+            Debug.Log("gameStates.Count == 0");
+            return;
+        }
+        GameState gs = gameStates.Pop();
+        turn = gs.turn;
+
+        Debug.Log("");
+        foreach (Piece piece in gs.pieces)
+        {
+            Debug.Log(piece.id);
+        }
+
+        int i = 0;
+        foreach (Piece piece in pieces)
+        {
+            piece.MoveToID(gs.pieces[i].id, gs.pieces[i].height);
+            i++;
+        }
+        switchTurnUI();
+    }
+
+    private void Do()
+    {
+        Debug.Log("");
+        Piece[] p = new Piece[10];
+        for (int i=0; i < 10; i++)
+        {
+            p[i] = this.pieces[i];
+        }
+        GameState gs = new GameState(this.turn, p);
+        gameStates.Push(gs);
     }
 }
