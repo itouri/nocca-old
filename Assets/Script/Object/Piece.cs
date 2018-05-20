@@ -41,6 +41,11 @@ public class Piece : MonoBehaviour {
         this.isMovable = isMovable;
     }
 
+    public bool getMovable()
+    {
+        return this.isMovable;
+    }
+
     public void MoveToID(int id, int height)
     {
         this.id = id;

@@ -11,8 +11,6 @@ public class GameRoot : MonoBehaviour {
     public Text textYouBlack;
     public Button buttonCameraResetBlack;
     public Button buttonCameraResetWhite;
-    public Button buttonDeselectBlack;
-    public Button buttonDeselectWhite;
 
     public Button buttonOneMore;
 
@@ -49,9 +47,10 @@ public class GameRoot : MonoBehaviour {
         if (selectedPiece != null)
         {
             Piece p = selectedPiece.GetComponent<Piece>();
-            // 選択済のPieceをクリックしても何もしない
+            // 選択済のPieceをクリックしたら選択解除
             if (p.id == pi.id)
             {
+                DeselectPiece();
                 return;
             }
             p.setOwnMaterial();
@@ -75,6 +74,7 @@ public class GameRoot : MonoBehaviour {
         selectedSquareIDs = nextIDs;
         selectedPiece = piece;
 
+
         // 効果音を鳴らす
         SoundManager.GetInstance().PlaySE(Sound.ID.SELECTING_PIECE);
     }
@@ -86,14 +86,6 @@ public class GameRoot : MonoBehaviour {
 
         //移動元のSquareの場所の高さを1つ下げる
         squares[p.id].downHeight();
-
-        // 動けなくなるPieceの確認
-        // TODO なんで２回？
-        foreach (Piece piece in pieces)
-        {
-            bool movable = (piece.height == squares[piece.id].height - 1);
-            piece.setMovable(movable);
-        }
 
         p.MoveToID(s.id, s.height);
         squares[s.id].upHeight();
@@ -114,29 +106,37 @@ public class GameRoot : MonoBehaviour {
             squares[id].ToUnselectable();
         }
 
-        // idが勝利マスだったら終了。勝者は現在のturn変数の中身
-        if (s.id == 25 || s.id == 26)
+        // idが勝利マスだったら終了，または動ける駒をなくす
+        // 勝者は現在のturn変数の中身
+        Util.PIECE_COLOR tmp = (Util.PIECE_COLOR)((int)turn * -1);
+        if (s.id == 25 || s.id == 26 || !IsExistMovable(tmp))
         {
-            state = State.FINISH;
-            string text = "You Win!";
-
-            if (this.turn == Util.PIECE_COLOR.WHITE)
-            {
-                this.textYouWhite.text = text;
-            }
-            else
-            {
-                this.textYouBlack.text = text;
-            }
-
-            buttonOneMore.gameObject.SetActive(true);
+            GotoGameFinish();
             return;
         }
 
         // 効果音を鳴らす
         SoundManager.GetInstance().PlaySE(Sound.ID.PUTTING_PIECE);
         turn = (Util.PIECE_COLOR)((int)turn * -1);
+
         switchTurnUI();
+    }
+
+    private void GotoGameFinish()
+    {
+        state = State.FINISH;
+        string text = "You Win!";
+
+        if (this.turn == Util.PIECE_COLOR.WHITE)
+        {
+            this.textYouWhite.text = text;
+        }
+        else
+        {
+            this.textYouBlack.text = text;
+        }
+
+        buttonOneMore.gameObject.SetActive(true);
     }
 
     public void OnClickOneMore()
@@ -169,7 +169,9 @@ public class GameRoot : MonoBehaviour {
         squares = new Square[27];
         for (int i=0; i<25; i++)
         {
-            GameObject go = Instantiate(square, Util.Id2Pos(i), Quaternion.identity) as GameObject;
+            Vector3 tmp = Util.Id2Pos(i);
+            tmp.y += 0.05f;
+            GameObject go = Instantiate(square, tmp, Quaternion.identity) as GameObject;
             go.name = ""+i;
             go.SetActive(false);
             go.transform.parent = enptySquares.transform;
@@ -183,8 +185,8 @@ public class GameRoot : MonoBehaviour {
             }
         }
         Vector3[] poses = new Vector3[2]{
-            new Vector3(0, -0.5f, -4.5f),
-            new Vector3(0, -0.5f, 4.5f),
+            new Vector3(0, -0.45f, -4.5f),
+            new Vector3(0, -0.45f, 4.5f),
         };
         // 25,26に特別なマスを追加
         for (int i = 25; i < 27; i++)
@@ -209,10 +211,6 @@ public class GameRoot : MonoBehaviour {
         {
             GameObject.Destroy(p.gameObject);
         }
-        foreach (Transform n in enptyPieces.transform)
-        {
-            GameObject.Destroy(n.gameObject);
-        }
         pieces = new Piece[10];
         for (int i = 0; i < 5; i++)
         {
@@ -236,21 +234,31 @@ public class GameRoot : MonoBehaviour {
         {
             this.textYouWhite.enabled = true;
             this.buttonCameraResetWhite.gameObject.SetActive(true);
-            this.buttonDeselectWhite.gameObject.SetActive(true);
 
             this.textYouBlack.enabled = false;
             this.buttonCameraResetBlack.gameObject.SetActive(false);
-            this.buttonDeselectBlack.gameObject.SetActive(false);
         } else
         {
             this.textYouWhite.enabled = false;
             this.buttonCameraResetWhite.gameObject.SetActive(false);
-            this.buttonDeselectWhite.gameObject.SetActive(false);
 
             this.textYouBlack.enabled = true;
             this.buttonCameraResetBlack.gameObject.SetActive(true);
-            this.buttonDeselectBlack.gameObject.SetActive(true);
         }
+    }
+
+    private bool IsExistMovable(Util.PIECE_COLOR turn)
+    {
+        for (int i=0; i<5; i++)
+        {
+            // 意図的に色を変えてる
+            int index = (turn == Util.PIECE_COLOR.WHITE) ? i * 2 : i * 2 + 1;
+            if (pieces[index].getMovable())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void DeselectPiece()
@@ -281,4 +289,5 @@ public class GameRoot : MonoBehaviour {
         }
         return (GameRoot.instance);
     }
+
 }

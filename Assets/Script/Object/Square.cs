@@ -63,5 +63,9 @@ public class Square : MonoBehaviour
         Vector3 pos = transform.position;
         height--;
         transform.position = new Vector3(pos.x, height * 1.0f - 0.5f, pos.z);
+        if (height == 0)
+        {
+            transform.position = new Vector3(pos.x, height * 1.0f - 0.45f, pos.z);
+        }
     }
 }

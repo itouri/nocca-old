@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657868, g: 0.49641263, b: 0.57481706, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -380,9 +380,9 @@ MonoBehaviour:
   textYouBlack: {fileID: 1428379772}
   buttonCameraResetBlack: {fileID: 1110225692}
   buttonCameraResetWhite: {fileID: 764341354}
-  buttonDeselectBlack: {fileID: 0}
-  buttonDeselectWhite: {fileID: 0}
-  buttonOneMore: {fileID: 254502278}
+  buttonDeselectBlack: {fileID: 1610840076}
+  buttonDeselectWhite: {fileID: 254502278}
+  buttonOneMore: {fileID: 1827132677}
 --- !u!4 &312877429
 Transform:
   m_ObjectHideFlags: 0
@@ -1155,8 +1155,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: dd447dd2c34042840a4aecbdd77a0d44, type: 3}
-  - {fileID: 8300000, guid: 04c13a0826d7f0548baae5a68a93c86c, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!4 &1389781036
 Transform:
   m_ObjectHideFlags: 0
