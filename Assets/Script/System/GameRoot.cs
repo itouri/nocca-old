@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using WebSocketSharp;
+using WebSocketSharp.Net;
+using Assets.Script.Domain;
 
 public class GameRoot : MonoBehaviour {
     public GameObject square;
@@ -26,12 +29,50 @@ public class GameRoot : MonoBehaviour {
     private GameObject enptySquares;
     private GameObject enptyPieces;
 
+    private WebSocket ws;
+
     // Use this for initialization
     void Start () {
         selectedSquareIDs = new List<int>();
         enptySquares = new GameObject("Squares");
         enptyPieces = new GameObject("Pieces");
         init(true);
+        initWebsocket();
+    }
+
+    void OnDestroy()
+    {
+        ws.Close();
+        ws = null;
+    }
+
+    private void initWebsocket()
+    {
+        string room_id = Interact.GetOneValueWithKey("room_id");
+        ws = new WebSocket("ws://localhost:23456/ws?room_id" + room_id);
+
+        ws.OnOpen += (sender, e) =>
+        {
+            Debug.Log("WebSocket Open");
+        };
+
+        ws.OnMessage += (sender, e) =>
+        {
+            var json = JsonUtil.Deserialize<Message>(e.Data);
+            Debug.Log("funcName: " + json.funcName + " body: " + json.body);
+        };
+
+        ws.OnError += (sender, e) =>
+        {
+            Debug.Log("WebSocket Error Message: " + e.Message);
+        };
+
+        ws.OnClose += (sender, e) =>
+        {
+            Debug.Log("WebSocket Close");
+        };
+
+        ws.Connect();
     }
 
     public void OnPieceClick(GameObject piece)
@@ -81,6 +122,10 @@ public class GameRoot : MonoBehaviour {
 
     public void OnSquareClick(GameObject square)
     {
+        // tmp
+        var room_id = Interact.GetOneValueWithKey("room_id");
+        Interact._Alert(room_id);
+
         Piece p = selectedPiece.GetComponent<Piece>();
         Square s = square.GetComponent<Square>();
 
@@ -260,6 +305,8 @@ public class GameRoot : MonoBehaviour {
         }
         return false;
     }
+
+
 
     public void DeselectPiece()
     {
