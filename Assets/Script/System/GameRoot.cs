@@ -37,7 +37,7 @@ public class GameRoot : MonoBehaviour {
         enptySquares = new GameObject("Squares");
         enptyPieces = new GameObject("Pieces");
         init(true);
-        initWebsocket();
+        //initWebsocket();
     }
 
     void OnDestroy()
@@ -49,7 +49,7 @@ public class GameRoot : MonoBehaviour {
     private void initWebsocket()
     {
         string room_id = Interact.GetOneValueWithKey("room_id");
-        ws = new WebSocket("ws://localhost:23456/ws?room_id" + room_id);
+        ws = new WebSocket("ws://localhost:23456/ws?room_id=" + room_id);
 
         ws.OnOpen += (sender, e) =>
         {
